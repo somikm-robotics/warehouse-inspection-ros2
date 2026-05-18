@@ -27,51 +27,6 @@ The system is developed in Gazebo simulation with a **simulation-to-real deploym
 
 ---
 
-## Warehouse Zones
-
-### Finished Goods Storage
-- 3 aisles · 8 rack blocks (double-sided) · 16 rack faces
-- 4 shelves per rack face · 3 product positions per shelf → **192 product slots**
-- Robot moves along aisles, using cross-aisles to switch between them
-- Racks inspected from aisle positions
-
-### Dispatch / Shipping Zone
-- Open warehouse area (no racks)
-- 2 packing rows (P1–P6) · 2 staging rows (S1–S6) → **12 items total**
-- 2 aisles (packing + staging) with open movement areas at row ends
-
----
-
-## Inspection Model
-
-The system uses a two-tier inspection model — cursory and deep — applied 
-across Finished Goods Storage (10 inspection points) and Dispatch / 
-Shipping (4 inspection points).
-
-Cursory inspection provides broad aisle-based coverage during normal patrol. 
-Deep inspection is triggered on defect detection, escalating to precise 
-rack-face and shelf-position level investigation.
-
-See [Inspection Model](docs/design/inspection_model.md) for full detail.
-
-
----
-
-## Sensors
-
-The system uses a combination of standard Gazebo sensors (Camera, LiDAR, 
-Depth Camera, Ultrasonic) and custom simulation plugins (Proximity, 
-Barcode Scanner, RFID) across both warehouse zones.
-
-Camera is the central inspection sensor. LiDAR handles navigation safety. 
-Barcode and RFID provide identity validation. Depth Camera and Proximity 
-are context-dependent support sensors.
-
-See [Sensor Strategy](docs/design/sensor_strategy.md) for full defect 
-mapping and zone coverage detail.
-
----
-
 ## System Architecture
 
 The system is structured into four packages: **Warehouse Agent Mission**, 
@@ -115,6 +70,42 @@ See [Patrol, Path Planning & Navigation](docs/design/navigation_path_planning.md
 for full detail including the phased patrol strategy and execution flow.
 
 ---
+
+## Warehouse Zones & Inspection Model
+
+The warehouse covers two zones:
+
+**Finished Goods Storage** — 3 aisles, 8 rack blocks (16 rack faces), 
+192 product slots. Robot patrols aisles, inspecting rack faces from 
+aisle positions across 10 cursory inspection points.
+
+**Dispatch / Shipping** — open floor area with 2 packing rows and 2 
+staging rows (12 items total), covered across 4 cursory inspection points.
+
+The system uses a two-tier inspection model — cursory for broad aisle-based 
+coverage, deep triggered on defect detection for precise rack-face and 
+shelf-position level investigation.
+
+See [Inspection Model](docs/design/inspection_model.md) for full zone 
+layouts, inspection point formats, and inspection behaviour.
+
+---
+
+## Sensors
+
+The system uses a combination of standard Gazebo sensors (Camera, LiDAR, 
+Depth Camera, Ultrasonic) and custom simulation plugins (Proximity, 
+Barcode Scanner, RFID) across both warehouse zones.
+
+Camera is the central inspection sensor. LiDAR handles navigation safety. 
+Barcode and RFID provide identity validation. Depth Camera and Proximity 
+are context-dependent support sensors.
+
+See [Sensor Strategy](docs/design/sensor_strategy.md) for full defect 
+mapping and zone coverage detail.
+
+---
+
 
 ## Detection Strategy
 

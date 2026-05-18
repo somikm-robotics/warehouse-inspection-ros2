@@ -11,6 +11,41 @@ The inspection model defines how the robot covers the warehouse, what it inspect
 - **Finished Goods Storage** — rack-based storage with structured aisle movement
 - **Dispatch / Shipping Zone** — open floor area with packing and staging rows
 
+### Full Warehouse Layout
+
+```
+------------------------------------------------------------------------
+| Finished Goods Storage                                               |
+|                                                                      |
+|  Rack  Aisle 1  Rack    Aisle 2  Rack    Aisle 3  Rack               |
+|  R1   |       | R2   |         | R3   |         | R4   |             |
+|       |       |      |         |      |         |      |             |
+|-------+-------+------+---------+------+---------+------+-------------|
+|                                                                      |
+|                    Cross-Aisle (Middle)                              |
+|                                                                      |
+|-------+-------+------+---------+------+---------+------+-------------|
+|       |       |      |         |      |         |      |             |
+|  R5   |       | R6   |         | R7   |         | R8   |             |
+|  Rack  Aisle 1  Rack    Aisle 2  Rack    Aisle 3  Rack               |
+|                                                                      |
+|                  Cross-Aisle (Front / Entry)                         |
+|                      (Connection Area)                               |
+|----------------------------|    |------------------------------------|
+                             |    |
+                             |    |
+------------------------------------------------------------------------
+| Dispatch / Shipping Zone                                             |
+|                                                                      |
+|    [Packing Row 1]      Aisle 1      [Packing Row 2]                 |
+|                                                                      |
+|    [Staging Row 1]      Aisle 2      [Staging Row 2]                 |
+|                                                                      |
+|                     Open Movement Area                               |
+|                                                                      |
+------------------------------------------------------------------------
+```
+
 ---
 
 ## Zone 1 — Finished Goods Storage
@@ -95,6 +130,20 @@ ZoneId  AisleId  RackId  FaceId  ShelfId
   - Staging Row 2 → S4, S5, S6
 - **Total: 12 items**
 
+```
+Packing Row (Top View)
+|--------------------------------|
+| P1     | P2     | P3           |
+| (Pack) | (Pack) | (Pack)       |
+|--------------------------------|
+
+Staging Row (Top View)
+|--------------------------------|
+| S1      | S2      | S3         |
+| (Stage) | (Stage) | (Stage)    |
+|--------------------------------|
+```
+
 ### Robot Movement
 
 - Aisle 1 (Packing Aisle) — between Packing Row 1 and Packing Row 2
@@ -144,7 +193,5 @@ Not defined for Dispatch zone. All inspection is handled at cursory level.
 | Finished Goods Storage | 10 | Per rack face / shelf position | Yes — triggered on defect |
 | Dispatch / Shipping | 4 | None | No |
 | **Total** | **14** | — | — |
-
----
 
 
