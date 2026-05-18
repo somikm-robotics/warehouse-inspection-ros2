@@ -44,54 +44,31 @@ The system is developed in Gazebo simulation with a **simulation-to-real deploym
 
 ## Inspection Model
 
-### Cursory Inspection
-Broad, aisle-based coverage during normal patrol. Robot slows or pauses at each inspection point.
+The system uses a two-tier inspection model — cursory and deep — applied 
+across Finished Goods Storage (10 inspection points) and Dispatch / 
+Shipping (4 inspection points).
 
-| Zone | Inspection Points |
-|------|------------------|
-| Finished Goods Storage | 10 points (2 per aisle × 3 aisles + 4 outer rack face points) |
-| Dispatch / Shipping | 4 points (2 aisle-based + 2 end-side) |
+Cursory inspection provides broad aisle-based coverage during normal patrol. 
+Deep inspection is triggered on defect detection, escalating to precise 
+rack-face and shelf-position level investigation.
 
-### Deep Inspection
-Triggered when a potential issue is identified during cursory inspection. Robot moves to a precise rack-face / shelf-position level for detailed verification.
+See [Inspection Model](docs/design/inspection_model.md) for full detail.
 
-**Inspection Point Format:**
-- Cursory: `ZoneId · AisleId · Position (Top/Middle)`
-- Deep: `ZoneId · AisleId · RackId · FaceId · ShelfId`
-
-### Inspection Behaviour
-- Cursory and deep inspection run **in parallel** with path planning to the next checkpoint
-- Upon defect detection at cursory level → robot navigates to corresponding deep inspection point
-- After deep inspection → patrol resumes
 
 ---
 
-## Defect & Sensor Mapping
+## Sensors
 
-| Defect Type | Sensors Used |
-|-------------|-------------|
-| Obstacles in path | LiDAR, Depth Camera, Proximity (Nav2 primary handler) |
-| Large structural damage | Camera, Depth Camera |
-| Packaging damage | Camera |
-| Missing / incorrect labels | Camera, Barcode Scanner |
-| Barcode / QR mismatch | Barcode Scanner, RFID |
-| Misplaced items | Camera, RFID |
-| Visible spillage | Camera |
+The system uses a combination of standard Gazebo sensors (Camera, LiDAR, 
+Depth Camera, Ultrasonic) and custom simulation plugins (Proximity, 
+Barcode Scanner, RFID) across both warehouse zones.
 
-### Sensors by Zone
+Camera is the central inspection sensor. LiDAR handles navigation safety. 
+Barcode and RFID provide identity validation. Depth Camera and Proximity 
+are context-dependent support sensors.
 
-| Sensor | Storage | Dispatch |
-|--------|---------|----------|
-| Camera | ✔️ | ✔️ |
-| LiDAR | ✔️ | ✔️ |
-| Depth Camera | ✔️ | optional |
-| Ultrasonic / Proximity | ✔️ | optional |
-| Barcode Scanner | ✔️ | ✔️ |
-| RFID | ✔️ | optional |
-
-**Standard sensors** (URDF / Gazebo Fortress): Camera (dual side-mounted), LiDAR, Depth Camera, Ultrasonic
-
-**Extended sensors** (custom plugins): Proximity (ray-based), Barcode Scanner, RFID
+See [Sensor Strategy](docs/design/sensor_strategy.md) for full defect 
+mapping and zone coverage detail.
 
 ---
 
@@ -108,67 +85,71 @@ interaction diagrams, and communication model see
 
 ---
 
-## Navigation & Path Planning Approach
+## Patrol Control
 
-The system uses an **incremental, goal-driven navigation model** with overlapping planning and inspection:
+The system supports runtime operator control via the `MissionUINode` 
+at two levels:
 
-1. Each inspection point is treated as a discrete Nav2 navigation goal
-2. Robot plans and navigates to the current inspection point
-3. On arrival, inspection begins
-4. **While inspection is in progress**, the system computes the path to the next inspection point in a separate planning thread
-5. On inspection completion, navigation to the next point begins immediately — no delay
+- **Patrol-level** — start, stop, enable, or disable the overall patrol
+- **Checkpoint-level** — activate or deactivate individual inspection points
 
-This ensures efficient utilisation of time while maintaining clear separation between navigation, planning, and inspection logic.
+Control commands are published as ROS2 topics by `MissionControllerNode` 
+and consumed by `MissionHandlerNode` and `PatrolPlugin`. Patrol stop and 
+checkpoint deactivation are handled gracefully — the system always 
+completes its current task before responding.
 
----
-
-## AI Detection Strategy — Phased Approach
-
-### Phase 1 — Simulation-Driven Detection (Current)
-- Cursory inspection driven by a **defect database** storing predefined defective item locations
-- `DbDetectionSimulationPlugin` reads location data and determines defect presence deterministically
-- Deep inspection: robot captures images and stores for offline analysis — no real-time inference
-- Full robotics pipeline (patrol → inspection → alerting → UI) validated without AI training dependency
-
-### Phase 2 — Reinforcement Learning Navigation (Planned)
-- RL applied to **navigation route planning** — determining the optimal order and selection of inspection checkpoints based on operational priorities and defect history
-- Nav2 retained for actual path planning and navigation execution between points — RL governs checkpoint sequencing only
-- Enables adaptive patrol routing that responds to changing warehouse conditions
-
-### Phase 3 — Real-Time AI-Based Detection (Planned)
-- Camera feeds processed using trained AI models (YOLO, ResNet variants)
-- Real-time detection for structural damage, packaging damage, and visible spillage
-- Synthetic datasets generated from base product images for model training
-- Detection becomes fully automated, real-time, and scalable
-- System transitions from simulation-driven behaviour to perception-driven autonomy
+See [Patrol Control](docs/design/patrol_control.md) for full detail.
 
 ---
 
-## Image Generation Strategy
+## Patrol, Path Planning & Navigation
 
-Designed to minimise effort while supporting full inspection coverage:
+Patrol management, path planning, and navigation execution are separated 
+into three distinct layers coordinated by the `MissionHandlerNode`. 
+Nav2 handles all path planning and navigation execution in both phases.
 
-| Image Type | Count |
-|-----------|-------|
-| Base product image (reused across all slots) | 1 |
-| Base packed item image | 1 |
-| Defect images (damage, labels, spillage, misplacement) | ~12 |
-| Rack model / image | 1 |
-| Environmental / obstacle images | 3 |
-| **Total** | **~18** |
+Path planning for the next checkpoint runs concurrently with inspection 
+at the current checkpoint, eliminating idle time between patrol points.
 
-Defect images are generated as controlled variations of the base product image (structural damage, packaging defects, label variations, spillage overlays). Image-to-location mapping is driven by inventory data and defect configuration files.
+See [Patrol, Path Planning & Navigation](docs/design/navigation_path_planning.md) 
+for full detail including the phased patrol strategy and execution flow.
+
+---
+
+## Detection Strategy
+
+The system uses a phased detection approach:
+
+- **Phase 1 (current)** — simulation-driven detection via a defect database, 
+  enabling full pipeline validation without AI training dependency
+- **Phase 2 (planned)** — reinforcement learning for adaptive patrol route 
+  planning and checkpoint sequencing, with Nav2 handling navigation execution
+- **Phase 3 (planned)** — real-time AI-based detection using trained models 
+  (YOLO, ResNet variants), transitioning from simulation-driven to 
+  perception-driven autonomy
+
+Detection is implemented as a pluggable component — switching phases requires 
+no changes to navigation, patrol, or orchestration layers.
+
+Image generation uses a minimal set (~18 images) built from a single base 
+product image with controlled defect variations, reused across the warehouse.
+
+See [AI Detection Strategy](docs/design/ai_detection_strategy.md) and 
+[RL Patrol Approach](docs/design/rl_patrol_approach.md) for full detail.
 
 ---
 
 ## Data Layer
 
-| Store | Contents |
-|-------|----------|
-| YAML / JSON | Zone, Aisle, Rack, Shelf definitions; Defect configuration |
-| Database | Inventory, PackingItems, InspectionPoints (with coordinates and angles) |
+The data layer is lightweight — used primarily for lookup and runtime 
+state management, not as a data-driven design.
 
-**Inspection Point schema:** `InspectionPointId · ZoneId · AisleId · RackId · RackFace · InspectionType (cursory/deep) · Position · X · Y · Z · Angle`
+Static configuration (zones, aisles, racks, shelves, defects) is stored 
+in YAML / JSON files. Runtime data (inventory, packing items, inspection 
+points with coordinates) is stored in a database. Checkpoint activation 
+state is persisted by `PatrolPlugin` during patrol execution.
+
+Full schema detail is covered in [Inspection Model](docs/design/inspection-model.md).
 
 ---
 
