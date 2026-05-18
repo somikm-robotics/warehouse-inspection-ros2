@@ -97,45 +97,14 @@ Triggered when a potential issue is identified during cursory inspection. Robot 
 
 ## System Architecture
 
-### Component Overview
+The system is structured into four packages: **Warehouse Agent Mission**, 
+**Warehouse Agent UI**, **Warehouse Agent Shared Infrastructure**, and 
+**Warehouse Agent Communication Interfaces**.
 
-The system is structured into four packages:
+For full architecture detail including component diagrams, class diagrams, 
+interaction diagrams, and communication model see 
+[System Architecture](docs/architecture/system-architecture.md).
 
-**Warehouse Agent Mission**
-- `MissionHandlerNode` — mission workflow sequencing, checkpoint lifecycle
-  - `PatrolPlugin` — patrol behaviour and checkpoint traversal
-  - `PathPlanningPlugin` — Nav2 path computation between inspection points
-  - `NavigationPlugin` — Nav2 navigation execution
-- `DefectInspectionNode` — sensor aggregation and defect determination
-  - `AIDetectionPlugin` — AI-based detection and classification pipeline
-  - `DbDetectionSimulationPlugin` — Phase 1 simulation-driven detection
-
-**Warehouse Agent UI**
-- `MissionControllerNode` — patrol enable/disable, checkpoint activation
-  - `MissionUINode` — operator control interface (Tinkr)
-  - `AlertReceiverNode` — receives and displays structured defect alerts
-
-**Warehouse Agent Shared Infrastructure**
-- `ProximityPlugin` — ray-based proximity sensing with threshold logic
-- `BarcodeScannerPlugin` — barcode / QR code scanning simulation
-- `RfidScannerPlugin` — RFID identity validation simulation
-
-**Warehouse Agent Communication Interfaces**
-- Shared ROS2 message and service definitions across packages
-
-### Diagrams
-
-#### Component Diagram
-![Component Diagram](docs/diagrams/Component_Diagram.png)
-
-#### Class Diagram
-![Class Diagram](docs/diagrams/Class_Diagrams.png)
-
-#### Interaction Diagram — Initial Control (Start/Stop Patrol, Checkpoint Activation)
-![Initial Interaction Diagram](docs/diagrams/Initial_Interaction_Diagram.png)
-
-#### Interaction Diagram — Start Patrol Sequence
-![Start Patrol Interaction](docs/diagrams/Interaction_Diagram-Start_Patrol.png)
 
 ---
 
