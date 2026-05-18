@@ -53,13 +53,13 @@ Performs defect detection and sensor integration at checkpoints.
 
 ## Component Diagram
 
-![Component Diagram](../diagrams/Component_Diagram.png)
+![Component Diagram](../diagrams/ComponentDiagram.png)
 
 ---
 
 ## Class Diagram
 
-![Class Diagram](../diagrams/Class_Diagrams.png)
+![Class Diagram](../diagrams/ClassDiagrams.png)
 
 ### Key Interfaces
 
