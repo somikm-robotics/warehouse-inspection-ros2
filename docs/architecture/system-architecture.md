@@ -146,7 +146,7 @@ Defect detected     →  check if deep inspection point is active
 
 Actors: `Warehouse UI` → `Robot Agent` → `Mission Handler` → `Patrol Agent`
 
-![Initial Interaction Diagram](../diagrams/Initial_Interaction_Diagram.png)
+![Initial Interaction Diagram](../diagrams/InitialInteractionDiagram.png)
 
 **Key behaviour:**
 - Warehouse UI publishes high-level control commands (enable/disable patrol, activate/deactivate checkpoints)
@@ -160,7 +160,7 @@ Actors: `Warehouse UI` → `Robot Agent` → `Mission Handler` → `Patrol Agent
 
 Actors: `Mission Handler` → `Patrol Agent` → `Path Planning Agent` → `Navigation Agent` → `Inspection Agent`
 
-![Start Patrol Interaction](../diagrams/Interaction_Diagram-Start_Patrol.png)
+![Start Patrol Interaction](../diagrams/InteractionDiagram_StartPatrol.png)
 
 **Key behaviour:**
 - Mission Handler initiates patrol, requests active inspection points
