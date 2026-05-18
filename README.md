@@ -140,7 +140,7 @@ in YAML / JSON files. Runtime data (inventory, packing items, inspection
 points with coordinates) is stored in a database. Checkpoint activation 
 state is persisted by `PatrolPlugin` during patrol execution.
 
-Full schema detail is covered in [Inspection Model](docs/design/inspection-model.md).
+Full schema detail is covered in [Inspection Model](docs/design/inspection_model.md).
 
 ---
 
